@@ -25,10 +25,10 @@ namespace MarketplaceAPI.Models.Base
         public DateTime TransactionDate { get; set; }
 
         // Navigation properties
-        public User Buyer { get; set; }
+        public ApplicationUser Buyer { get; set; }
 
         // Add this property to reference Seller
-        public User Seller { get; set; }
+        public ApplicationUser Seller { get; set; }
 
         public Product Product { get; set; }
     }

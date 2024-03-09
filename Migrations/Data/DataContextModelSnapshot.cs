@@ -4,19 +4,16 @@ using MarketplaceAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace MarketplaceAPI.Migrations
+namespace MarketplaceAPI.Migrations.Data
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240308075036_Initial")]
-    partial class Initial
+    partial class DataContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,62 @@ namespace MarketplaceAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("MarketplaceAPI.Models.Category", b =>
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.ApplicationUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApplicationUser");
+                });
+
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.Category", b =>
                 {
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
@@ -42,7 +94,7 @@ namespace MarketplaceAPI.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("MarketplaceAPI.Models.Product", b =>
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.Product", b =>
                 {
                     b.Property<int>("ProductId")
                         .ValueGeneratedOnAdd()
@@ -76,7 +128,7 @@ namespace MarketplaceAPI.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("MarketplaceAPI.Models.Transaction", b =>
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.Transaction", b =>
                 {
                     b.Property<int>("TransactionId")
                         .ValueGeneratedOnAdd()
@@ -107,40 +159,15 @@ namespace MarketplaceAPI.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("MarketplaceAPI.Models.User", b =>
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.Product", b =>
                 {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("MarketplaceAPI.Models.Product", b =>
-                {
-                    b.HasOne("MarketplaceAPI.Models.Category", "Category")
-                        .WithMany("Products")
+                    b.HasOne("MarketplaceAPI.Models.Base.Category", "Category")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketplaceAPI.Models.User", "Seller")
+                    b.HasOne("MarketplaceAPI.Models.Base.ApplicationUser", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -151,21 +178,21 @@ namespace MarketplaceAPI.Migrations
                     b.Navigation("Seller");
                 });
 
-            modelBuilder.Entity("MarketplaceAPI.Models.Transaction", b =>
+            modelBuilder.Entity("MarketplaceAPI.Models.Base.Transaction", b =>
                 {
-                    b.HasOne("MarketplaceAPI.Models.User", "Buyer")
+                    b.HasOne("MarketplaceAPI.Models.Base.ApplicationUser", "Buyer")
                         .WithMany()
                         .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketplaceAPI.Models.Product", "Product")
+                    b.HasOne("MarketplaceAPI.Models.Base.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MarketplaceAPI.Models.User", "Seller")
+                    b.HasOne("MarketplaceAPI.Models.Base.ApplicationUser", "Seller")
                         .WithMany()
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -176,11 +203,6 @@ namespace MarketplaceAPI.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Seller");
-                });
-
-            modelBuilder.Entity("MarketplaceAPI.Models.Category", b =>
-                {
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-
 using MarketplaceAPI.Data;
 using MarketplaceAPI.Models.Base;
-using System;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace MarketplaceAPI.Controllers
 {
@@ -13,15 +13,17 @@ namespace MarketplaceAPI.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public TransactionController(DataContext context)
+        public TransactionController(DataContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // POST: api/Transaction
         [HttpPost]
-        public IActionResult CreateTransaction(Transaction transaction)
+        public async Task<IActionResult> CreateTransaction(Transaction transaction)
         {
             if (!ModelState.IsValid)
             {
@@ -29,9 +31,9 @@ namespace MarketplaceAPI.Controllers
             }
 
             // Retrieve the buyer, seller, and product from the database based on their IDs
-            var buyer = _context.Users.Find(transaction.BuyerId);
-            var seller = _context.Users.Find(transaction.SellerId);
-            var product = _context.Products.Find(transaction.ProductId);
+            var buyer = await _userManager.FindByIdAsync(transaction.BuyerId.ToString());
+            var seller = await _userManager.FindByIdAsync(transaction.SellerId.ToString());
+            var product = await _context.Products.FindAsync(transaction.ProductId);
 
             // Check if buyer, seller, and product exist
             if (buyer == null)
@@ -54,7 +56,7 @@ namespace MarketplaceAPI.Controllers
 
             // Add the transaction to the context and save changes
             _context.Transactions.Add(transaction);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetTransaction), new { id = transaction.TransactionId }, transaction);
         }
@@ -77,6 +79,5 @@ namespace MarketplaceAPI.Controllers
 
             return Ok(transaction);
         }
-
     }
 }

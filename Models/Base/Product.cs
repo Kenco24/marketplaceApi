@@ -20,15 +20,19 @@ public class Product
     public decimal Price { get; set; }
 
     [Required]
-    public int SellerId { get; set; } // Corrected property name
+    [ForeignKey("Seller")]
+    public int SellerId { get; set; } // Change the data type to string
+
+    public ApplicationUser Seller { get; set; } // Update to ApplicationUser
 
     // Foreign key
     [Required]
+    [ForeignKey("Category")]
     public int CategoryId { get; set; }
 
     // Navigation properties
     public Category Category { get; set; }
-    public User Seller { get; set; }
+   
 }
 
 

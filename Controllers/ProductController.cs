@@ -5,6 +5,9 @@ using System;
 using System.Linq;
 using MarketplaceAPI.Models.Base;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using MarketplaceAPI.Models.NewFolder;
 
 namespace MarketplaceAPI.Controllers
 {
@@ -13,19 +16,41 @@ namespace MarketplaceAPI.Controllers
     public class ProductController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProductController(DataContext context)
+        public ProductController(DataContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
+
+
+
         // GET: api/Product
-        [HttpGet]
+        [HttpGet, Authorize]
         public IActionResult GetProducts()
         {
             var products = _context.Products.ToList();
             return Ok(products);
         }
+
+
+        [HttpGet("/user/{id}")]
+        public async Task<ActionResult<ApplicationUser>> GetUserById(string id)
+        {
+            // Retrieve the user from the Identity context
+            var user = await _userManager.FindByIdAsync(id);
+
+            // Check if user exists
+            if (user == null)
+            {
+                return NotFound(); // Return 404 Not Found if user is not found
+            }
+
+            return Ok(user); // Return the user if found
+        }
+
 
         [HttpGet("{id}")]
         public IActionResult GetProduct(int id)
@@ -44,46 +69,53 @@ namespace MarketplaceAPI.Controllers
         }
 
         // POST: api/Product
-        // POST: api/Product
-        // POST: api/Product
+
         [HttpPost]
-        public IActionResult CreateProduct(Product product)
+        public async Task<IActionResult> CreateProduct(ProductInput productInput)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Retrieve the seller and category from the database
-            var seller = _context.Users.Find(product.SellerId);
-            var category = _context.Categories.Find(product.CategoryId);
+            // Retrieve the seller from the Identity context
+            var seller = await _userManager.FindByIdAsync(productInput.SellerId.ToString());
 
-            // Check if seller and category exist
+            // Check if seller exists
             if (seller == null)
             {
                 return BadRequest("Invalid seller ID.");
             }
+
+            // Retrieve the category from the base context
+            var category = await _context.Categories.FindAsync(productInput.CategoryId);
             if (category == null)
             {
                 return BadRequest("Invalid category ID.");
             }
 
-            // Assign the seller and category to the product
-            product.Seller = seller;
-            product.Category = category;
+            // Map ProductInput to Product entity
+            var product = new Product
+            {
+                Name = productInput.Name,
+                Description = productInput.Description,
+                Price = productInput.Price,
+                SellerId = productInput.SellerId,
+                CategoryId = productInput.CategoryId
+            };
 
             // Add the product to the context and save changes
             _context.Products.Add(product);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            // Reload the product with related entities populated
-            var createdProduct = _context.Products
-                .Include(p => p.Seller)
-                .Include(p => p.Category)
-                .FirstOrDefault(p => p.ProductId == product.ProductId);
+            // Map Product entity to ProductOutput DTO if needed
+            // var productOutput = new ProductOutput { ... };
 
-            return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.ProductId }, createdProduct);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.ProductId }, product);
         }
+
+
+
 
 
         // PUT: api/Product/{id}

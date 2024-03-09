@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MarketplaceAPI.Models.Base;
+using MarketplaceAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace MarketplaceAPI.Data
 {
@@ -12,12 +15,10 @@ namespace MarketplaceAPI.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<User> Users { get; set; }
+     
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
                 .WithMany()
@@ -27,7 +28,7 @@ namespace MarketplaceAPI.Data
                 .HasOne(p => p.Seller)
                 .WithMany()
                 .HasForeignKey(p => p.SellerId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Product>()
                 .Property(p => p.Price)
@@ -41,15 +42,22 @@ namespace MarketplaceAPI.Data
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.Buyer)
                 .WithMany()
-                .HasForeignKey(t => t.BuyerId); // Ensure BuyerId matches the data type of UserId in the User entity
+                .HasForeignKey(t => t.BuyerId);
 
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.Seller)
                 .WithMany()
-                .HasForeignKey(t => t.SellerId) // Update the foreign key property name
-                .OnDelete(DeleteBehavior.Restrict); // Prevent cascading delete
+                .HasForeignKey(t => t.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
 
     }
+    public class IdentityContext : IdentityDbContext<ApplicationUser,IdentityRole<int>,int>
+        {
+        public IdentityContext(DbContextOptions<IdentityContext> options) : base(options)
+        {
+        }
+    }
+
 }

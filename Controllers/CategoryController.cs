@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Linq;
 using MarketplaceAPI.Data;
 using MarketplaceAPI.Models;
 using MarketplaceAPI.Models.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace MarketplaceAPI.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
@@ -67,5 +70,24 @@ namespace MarketplaceAPI.Controllers
 
             return NoContent();
         }
+        [Authorize]
+        [HttpGet("currentUserId")]
+        public IActionResult GetCurrentUserId()
+        {
+            // Retrieve the user's ID from the claims
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Check if user ID exists
+            if (userId == null)
+            {
+                return NotFound(); // Or return some appropriate error response
+            }
+
+            // Return the user's ID
+            return Ok(userId);
+        }
+
+
+
     }
 }
